@@ -47,17 +47,26 @@ namespace Application.Services
             if (await _customerRepository.EmailExistsAsync(customer.Email))
                 throw new EntityAlreadyExistsException("Utilizador", customer.Email);
 
+            if (await _customerRepository.DriverLicenseExistsAsync(customer.DrivingLicense))
+                throw new EntityAlreadyExistsException("Utilizador", customer.DrivingLicense);
+
             customer.Email = customer.Email.Trim().ToLower(); //passar para minusculas
             await _customerRepository.AddAsync(customer);
         }
 
-        public Task UpdateCustomerAsync(Customer customer)
+        public async Task UpdateCustomerAsync(Customer customer)
         {
             if (!customer.IsActive)
                 throw new EntityInactiveException("Utilizador");
 
+            if (await _customerRepository.EmailExistsAsync(customer.Email, customer.ID))
+                throw new EntityAlreadyExistsException("Utilizador", customer.Email);
+
+            if (await _customerRepository.DriverLicenseExistsAsync(customer.DrivingLicense, customer.ID))
+                throw new EntityAlreadyExistsException("Utilizador", customer.DrivingLicense);
+
             customer.LastUpdate();
-            return _customerRepository.UpdateAsync(customer);
+            await _customerRepository.UpdateAsync(customer);
         }
 
         //  (soft delete )

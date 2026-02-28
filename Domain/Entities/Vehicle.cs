@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.Common;
+using Domain.Validation;
 using Microsoft.VisualBasic.FileIO;
 
 namespace Domain.Entities
@@ -21,14 +22,15 @@ namespace Domain.Entities
 
         [Required]
         [MaxLength(15)]
+        [LicensePlate]
         public string LicensePlate { get; set; }
 
         [Required]
-        [Range(1900, 2100)]
-        public int Year { get; set; }
+        [YearRange]
+        public int? Year { get; set; }
 
         [Required]
-        public FuelType FuelType { get; set; }
+        public FuelType? FuelType { get; set; }
 
         public bool IsAvailable { get; set; } = true;
 
