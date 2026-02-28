@@ -16,5 +16,8 @@ namespace Application.Interfaces
         Task UpdateAsync(Customer customer);           
         Task DeleteAsync(Guid id);
         Task<bool> EmailExistsAsync(string email);
+        Task<bool> EmailExistsAsync(string email, Guid userId);
+        Task<bool> DriverLicenseExistsAsync(string driverLicense);
+        Task<bool> DriverLicenseExistsAsync(string driverLicense, Guid customerID);
     }
 }

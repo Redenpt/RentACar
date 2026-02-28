@@ -20,14 +20,14 @@ namespace Infrastructure.Repositories
                 return await _context.Vehicles.ToListAsync();
 
             return await _context.Vehicles
-                                 .Where(v => !v.IsActive)
+                                 .Where(v => v.IsActive)
                                  .ToListAsync();
         }
 
         public async Task<Vehicle?> GetByIdAsync(Guid ID)
         {
             return await _context.Vehicles
-                                 .FirstOrDefaultAsync(v => v.ID == ID && !v.IsActive);
+                                 .FirstOrDefaultAsync(v => v.ID == ID && v.IsActive);
         }
 
         public async Task<Vehicle?> GetByLicensePlateAsync(string licensePlate)
@@ -64,7 +64,19 @@ namespace Infrastructure.Repositories
         public async Task<bool> LicensePlateExistsAsync(string licensePlate)
         {
             return await _context.Vehicles
-                .AnyAsync(v => v.LicensePlate.ToLower() == licensePlate.ToLower());
+                .AnyAsync(v => 
+                            v.IsActive &&
+                            v.LicensePlate.ToUpper() == licensePlate.ToUpper());
+        }
+
+        //para ignorar o proprio veículo
+        public async Task<bool> LicensePlateExistsAsync(string licensePlate, Guid vehicleID)
+        {
+            return await _context.Vehicles
+                .AnyAsync(v => 
+                            v.IsActive &&
+                            v.LicensePlate.ToUpper() == licensePlate.ToUpper() &&
+                            v.ID != vehicleID);
         }
     }
 }

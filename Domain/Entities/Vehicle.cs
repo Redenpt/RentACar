@@ -27,10 +27,10 @@ namespace Domain.Entities
 
         [Required]
         [YearRange]
-        public int Year { get; set; }
+        public int? Year { get; set; }
 
         [Required]
-        public FuelType FuelType { get; set; }
+        public FuelType? FuelType { get; set; }
 
         public bool IsAvailable { get; set; } = true;
 

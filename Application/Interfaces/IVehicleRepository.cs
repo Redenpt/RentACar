@@ -16,5 +16,6 @@ namespace Application.Interfaces
         Task UpdateAsync(Vehicle vehicle);           
         Task DeleteAsync(Guid id);
         Task<bool> LicensePlateExistsAsync(string licensePlate);
+        Task<bool> LicensePlateExistsAsync(string licensePlate, Guid vehicleID);
     }
 }

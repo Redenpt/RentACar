@@ -1,0 +1,329 @@
+﻿@{
+    Layout = "_Layout";
+}
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Domain.Entities
+@using RentACar.Helpers
+@model IEnumerable<Customer>
+@{
+    var operation = ViewBag.OperationResult as OperationResult;
+}
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<div class="container mt-5">
+    @if (operation != null && operation.Success && operation.OperationType == OperationType.None)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @operation.OperationMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (operation != null && !operation.Success && operation.OperationType == OperationType.None)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @operation.OperationMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    <h2>Utilizadores</h2>
+    <hr class="border border-1 border-secondary opacity-50">
+
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCustomerModal">Novo Utilizador</button>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <colgroup>
+            <col style="width: 25%">
+            <col style="width: 30%">
+            <col style="width: 15%">
+            <col style="width: 15%">
+            <col style="width: 15%">
+        </colgroup>
+        <thead class="table-dark">
+            <tr>
+                <th>Nome Completo</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Carta de Condução</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var customer in Model)
+                {
+                    <tr>
+                        <td>@customer.FullName</td>
+                        <td>@customer.Email</td>
+                        <td>@customer.Phone</td>
+                        <td>@customer.DrivingLicense</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-warning" onclick="openEditCustomerModal('@customer.ID')">Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="openDeleteCustomerModal('@customer.ID')">Remover</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        Não existem utilizadores registados.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@* ===================== MODAL ADICIONAR UTILIZADOR ===================== *@
+@{
+    CustomerViewModel? createCustomerModel = null;
+
+    if (operation?.OperationType == OperationType.Create && operation.Data is CustomerViewModel createmodel)
+    {
+        createCustomerModel = createmodel;
+    }
+}
+<form asp-controller="Customers" asp-action="AddCustomer" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal fade" id="createCustomerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Registar Novo Utilizador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <!-- Mensagens de erro -->
+                <div class="modal-body">
+                    @if (operation?.Errors?.Any() == true && operation?.OperationType == OperationType.Create)
+                    {
+                        <div class="alert alert-danger">
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var error in operation.Errors)
+                                {
+                                    <li>@error</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    <!-- Form do Utilizador -->
+                    <div class="mb-4">
+                        <label for="FullName" class="form-label">Nome Completo</label>
+                        <input type="text" name="FullName" class="form-control" placeholder="" />
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="Email" class="form-label">Email</label>
+                            <input type="email" name="Email" class="form-control" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="Phone" class="form-label">Telefone</label>
+                            <input type="text" name="Phone" class="form-control" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="DrivingLicense" class="form-label">Carta de Condução</label>
+                            <input type="text" name="DrivingLicense" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Registar Utilizador
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (operation?.OperationType == OperationType.Create && !operation.Success)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var modal = new bootstrap.Modal(document.getElementById('createCustomerModal'));
+            modal.show();
+        });
+    </script>
+}
+@* ============================================================== *@
+@* ===================== MODAL EDITAR UTILIZADOR ===================== *@
+@{
+    CustomerViewModel? updateCustomerModel = null;
+
+    if (operation?.OperationType == OperationType.Update && operation.Data is CustomerViewModel updateModel)
+    {
+        updateCustomerModel = updateModel;
+    }
+    var failedCustomerId = updateCustomerModel?.ID.ToString(); // null-safe
+}
+<form asp-controller="Customers" asp-action="UpdateCustomer" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal fade" id="updateCustomerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header bg-warning text-black">
+                    <h5 class="modal-title">Editar Utilizador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <!-- Mensagens de erro -->
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="updateCustomerModalErrors" style="display:none">
+                        <ul class="list-unstyled mb-0">
+                            @if (operation?.Errors?.Any() == true && operation?.OperationType == OperationType.Update)
+                            {
+                                @foreach (var error in operation.Errors)
+                                {
+                                    <li>@error</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <!-- Form do Utilizador -->
+                    <div class="mb-4">
+                        <label for="FullName" class="form-label">Nome Completo</label>
+                        <input type="text" name="FullName" class="form-control" value="@updateCustomerModel?.FullName" placeholder="" />
+                        <input type="hidden" name="ID" value="@updateCustomerModel?.ID" />
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="Email" class="form-label">Email</label>
+                            <input type="email" name="Email" class="form-control" value="@updateCustomerModel?.Email" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="Phone" class="form-label">Telefone</label>
+                            <input type="text" name="Phone" class="form-control" value="@updateCustomerModel?.Phone" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="DrivingLicense" class="form-label">Carta de Condução</label>
+                            <input type="text" name="DrivingLicense" class="form-control" value="@updateCustomerModel?.DrivingLicense" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        Guardar Alterações
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var customers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+    function getCustomerIndex(customerId) {
+        return customers.findIndex(c => c.ID === customerId);
+    }
+
+    function openEditCustomerModal(customerId) {
+        var index = getCustomerIndex(customerId);
+        if (index === -1) return;
+        var customer = customers[index];
+
+        var modalEl = document.getElementById('updateCustomerModal');
+        modalEl.querySelector('input[name="ID"]').value = customer.ID;
+        modalEl.querySelector('input[name="FullName"]').value = customer.FullName;
+        modalEl.querySelector('input[name="Email"]').value = customer.Email;
+        modalEl.querySelector('input[name="Phone"]').value = customer.Phone;
+        modalEl.querySelector('input[name="DrivingLicense"]').value = customer.DrivingLicense;
+
+        var failedCustomerId = '@failedCustomerId';
+        var errorsEl = document.getElementById('updateCustomerModalErrors');
+        if (errorsEl && customer.ID === failedCustomerId) {
+            errorsEl.style.display = 'block';
+        }
+        else{
+            errorsEl.style.display = 'none';
+        }
+
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+</script>
+@if (updateCustomerModel != null)
+{
+    <script>
+        var failedCustomerId = '@failedCustomerId';
+        openEditCustomerModal(failedCustomerId);
+    </script>
+}
+
+@* ============================================================== *@
+@* ===================== MODAL ELIMINAR UTILIZADOR ===================== *@
+<form asp-controller="Customers" asp-action="DeleteCustomer" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal fade" id="deleteCustomerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Eliminar Utilizador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <input type="hidden" name="customerID" />
+                    <p>Tem a certeza que quer eliminar o utilizador <strong id="deleteCustomerName"></strong>?</p>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        Eliminar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    function openDeleteCustomerModal(customerId) {
+        var index = getCustomerIndex(customerId);
+        if (index === -1) return;
+        var customer = customers[index];
+
+        var modalEl = document.getElementById('deleteCustomerModal');
+        modalEl.querySelector('input[name="customerID"]').value = customer.ID;
+        modalEl.querySelector('#deleteCustomerName').innerText = customer.FullName;
+
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+</script>
+@* ============================================================== *@

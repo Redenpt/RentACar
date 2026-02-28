@@ -46,14 +46,14 @@ namespace RentACar.Controllers
                 var vehicle = new Vehicle
                 {
                     Brand = model.Brand,
-                    Model = model.Model,
+                    Model = model.VehicleModel,
                     LicensePlate = model.LicensePlate,
                     Year = model.Year,
                     FuelType = model.FuelType,
                 };
 
                 await _vehicleService.AddVehicleAsync(vehicle);
-                var operationResult = new OperationResult(true, "Utilizador", OperationType.Create);
+                var operationResult = new OperationResult(true, "Veículo", OperationType.Create);
                 TempData.Put("OperationResult", operationResult);
                 return RedirectToAction("ManageVehicles");
             }
@@ -66,7 +66,7 @@ namespace RentACar.Controllers
             }
             catch (Exception ex)
             {
-                var operationResult = new OperationResult(false, "Utilizador", OperationType.Create, $"Ocorreu um erro inesperado: {ex.Message}");
+                var operationResult = new OperationResult(false, "Veículo", OperationType.Create, $"Ocorreu um erro inesperado: {ex.Message}");
                 TempData.Put("OperationResult", operationResult);
                 return RedirectToAction("ManageVehicles");
             }
@@ -90,13 +90,13 @@ namespace RentACar.Controllers
                 var vehicle = await _vehicleService.GetVehicleByIdAsync(model.ID);
 
                 vehicle.Brand = model.Brand;
-                vehicle.Model = model.Model;
+                vehicle.Model = model.VehicleModel;
                 vehicle.LicensePlate = model.LicensePlate;
                 vehicle.Year = model.Year;
                 vehicle.FuelType = model.FuelType;
 
                 await _vehicleService.UpdateVehicleAsync(vehicle);
-                var operationResult = new OperationResult(true, "Utilizador", OperationType.Update);
+                var operationResult = new OperationResult(true, "Veículo", OperationType.Update);
                 TempData.Put("OperationResult", operationResult);
                 return RedirectToAction("ManageVehicles");
             }
@@ -117,7 +117,7 @@ namespace RentACar.Controllers
 
             catch (Exception ex)
             {
-                var operationResult = new OperationResult(false, "Utilizador", OperationType.Update, $"Ocorreu um erro inesperado: {ex.Message}");
+                var operationResult = new OperationResult(false, "Veículo", OperationType.Update, $"Ocorreu um erro inesperado: {ex.Message}");
                 TempData.Put("OperationResult", operationResult);
                 return RedirectToAction("ManageVehicles");
             }
@@ -130,19 +130,19 @@ namespace RentACar.Controllers
             try
             {
                 await _vehicleService.DeleteVehicleAsync(vehicleID);
-                var operationResult = new OperationResult(true, "Utilizador", OperationType.Delete);
+                var operationResult = new OperationResult(true, "Veículo", OperationType.Delete);
                 TempData.Put("OperationResult", operationResult);
                 return RedirectToAction("ManageVehicles");
             }
             catch (EntityNotFoundException ex)
             {
-                var operationResult = new OperationResult(false, "Utilizador", OperationType.Delete, $"Impossível eliminar utilizador. {ex.Message}");
+                var operationResult = new OperationResult(false, "Veículo", OperationType.Delete, $"Impossível eliminar Veículo. {ex.Message}");
                 TempData.Put("OperationResult", operationResult);
                 return RedirectToAction("ManageVehicles");
             }
             catch (Exception ex)
             {
-                var operationResult = new OperationResult(false, "Utilizador", OperationType.Delete, $"Ocorreu um erro inesperado: {ex.Message}");
+                var operationResult = new OperationResult(false, "Veículo", OperationType.Delete, $"Ocorreu um erro inesperado: {ex.Message}");
                 TempData.Put("OperationResult", operationResult);
                 return RedirectToAction("ManageVehicles");
             }

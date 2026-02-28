@@ -54,13 +54,16 @@ namespace Application.Services
             await _vehicleRepository.AddAsync(vehicle);
         }
 
-        public Task UpdateVehicleAsync(Vehicle vehicle)
+        public async Task UpdateVehicleAsync(Vehicle vehicle)
         {
             if (!vehicle.IsActive)
                 throw new EntityInactiveException("Veículo");
 
+            if (await _vehicleRepository.LicensePlateExistsAsync(vehicle.LicensePlate, vehicle.ID))
+                throw new EntityAlreadyExistsException("Veículo", vehicle.LicensePlate);
+
             vehicle.LastUpdate();
-            return _vehicleRepository.UpdateAsync(vehicle);
+            await _vehicleRepository.UpdateAsync(vehicle);
         }
 
         //  (soft delete )

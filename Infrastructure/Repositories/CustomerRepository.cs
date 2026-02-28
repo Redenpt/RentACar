@@ -20,14 +20,14 @@ namespace Infrastructure.Repositories
                 return await _context.Customers.ToListAsync();
 
             return await _context.Customers
-                                 .Where(c => !c.IsActive)
+                                 .Where(c => c.IsActive)
                                  .ToListAsync();
         }
 
         public async Task<Customer?> GetByIdAsync(Guid ID)
         {
             return await _context.Customers
-                                 .FirstOrDefaultAsync(c => c.ID == ID && !c.IsActive);
+                                 .FirstOrDefaultAsync(c => c.ID == ID && c.IsActive);
         }
 
         public async Task<Customer?> GetByEmailAsync(string email)
@@ -64,7 +64,31 @@ namespace Infrastructure.Repositories
         public async Task<bool> EmailExistsAsync(string email)
         {
             return await _context.Customers
-                .AnyAsync(c => c.Email.ToLower() == email.ToLower());
+                .AnyAsync(c => c.IsActive && c.Email.ToLower() == email.ToLower());
+        }
+
+        public async Task<bool> DriverLicenseExistsAsync(string driverLicense)
+        {
+            return await _context.Customers
+                .AnyAsync(c => c.IsActive && c.DrivingLicense.ToLower() == driverLicense.ToLower());
+        }
+
+        //para ignorar o proprio utilizador
+        public async Task<bool> EmailExistsAsync(string email, Guid customerID)
+        {
+            return await _context.Customers
+                .AnyAsync(c => c.IsActive
+                            && c.Email.ToLower() == email.ToLower()
+                            && c.ID != customerID); 
+        }
+
+        //para ignorar o proprio utilizador
+        public async Task<bool> DriverLicenseExistsAsync(string driverLicense, Guid customerID)
+        {
+            return await _context.Customers
+                .AnyAsync(c => c.IsActive
+                            && c.DrivingLicense.ToLower() == driverLicense.ToLower()
+                            && c.ID != customerID); 
         }
     }
 }
