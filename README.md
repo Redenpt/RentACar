@@ -34,7 +34,7 @@ dotnet run
 ---
 
 ## 💡 Tip: After running, check the console output for a line like: Now listening on: http://localhost:5228
-## Copy this URL to your browser to open the application
+### Copy this URL to your browser to open the application
 
 
 ## 🗄 Database
