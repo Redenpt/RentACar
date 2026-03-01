@@ -15,7 +15,12 @@ namespace Application.Interfaces
         Task AddAsync(Vehicle vehicle);              
         Task UpdateAsync(Vehicle vehicle);           
         Task DeleteAsync(Guid id);
-        Task<bool> LicensePlateExistsAsync(string licensePlate);
-        Task<bool> LicensePlateExistsAsync(string licensePlate, Guid vehicleID);
+        Task<bool> LicensePlateExistsAsync(string licensePlate, Guid? vehicleID = null);
+        Task<bool> HasActiveRentalsAsync(Guid vehicleID);
+        Task<bool> HasCurrentlyActiveRentalAsync(Guid vehicleID);
+        Task<int> GetTotalActiveVehiclesAsync();
+        Task<int> GetCurrentlyRentedVehiclesCountAsync();
+        Task<List<(string VehicleLicense, int Count)>> GetTopVehiclesAsync(int top = 5);
     }
 }
+

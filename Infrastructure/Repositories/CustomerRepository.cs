@@ -61,34 +61,51 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public async Task<bool> EmailExistsAsync(string email)
-        {
-            return await _context.Customers
-                .AnyAsync(c => c.IsActive && c.Email.ToLower() == email.ToLower());
-        }
-
-        public async Task<bool> DriverLicenseExistsAsync(string driverLicense)
-        {
-            return await _context.Customers
-                .AnyAsync(c => c.IsActive && c.DrivingLicense.ToLower() == driverLicense.ToLower());
-        }
-
-        //para ignorar o proprio utilizador
-        public async Task<bool> EmailExistsAsync(string email, Guid customerID)
+        //pode ignorar o proprio utilizador
+        public async Task<bool> EmailExistsAsync(string email, Guid? customerID = null)
         {
             return await _context.Customers
                 .AnyAsync(c => c.IsActive
                             && c.Email.ToLower() == email.ToLower()
-                            && c.ID != customerID); 
+                            && (customerID == null || c.ID != customerID)); 
         }
 
-        //para ignorar o proprio utilizador
-        public async Task<bool> DriverLicenseExistsAsync(string driverLicense, Guid customerID)
+        //pode ignorar o proprio utilizador
+        public async Task<bool> DriverLicenseExistsAsync(string driverLicense, Guid? customerID = null)
         {
             return await _context.Customers
                 .AnyAsync(c => c.IsActive
                             && c.DrivingLicense.ToLower() == driverLicense.ToLower()
-                            && c.ID != customerID); 
+                            && (customerID == null || c.ID != customerID)); 
+        }
+
+        public async Task<bool> HasActiveRentalsAsync(Guid customerId)
+        {
+            var today = DateTime.Today;
+            return await _context.RentalContracts
+                .AnyAsync(rc => rc.CustomerID == customerId
+                             && rc.EndDate >= today
+                             && rc.IsActive);
+        }
+
+        public async Task<int> GetTotalActiveCustomersAsync()
+        {
+            return await _context.Customers
+                                 .Where(c => c.IsActive)
+                                 .CountAsync();
+        }
+
+        public async Task<List<(string CustomerName, int Count)>> GetTopCustomersAsync(int top = 5)
+        {
+            return await _context.RentalContracts
+                .Where(rc => rc.IsActive)
+                .GroupBy(rc => rc.Customer.FullName)
+                .Select(g => new { CustomerName = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(top)
+                .AsNoTracking()
+                .ToListAsync()
+                .ContinueWith(t => t.Result.Select(x => (x.CustomerName, x.Count)).ToList());
         }
     }
 }

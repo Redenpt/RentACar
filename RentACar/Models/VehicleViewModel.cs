@@ -32,5 +32,7 @@ namespace RentACar.Models
         [Required(ErrorMessage = "O tipo de combustível é obrigatório.")]
         [Display(Name = "Combustível")]
         public FuelType? FuelType { get; set; }
+
+        public VehicleStatus Status { get; set; }
     }
 }

@@ -37,4 +37,60 @@ namespace Domain.Validation
             return ValidationResult.Success;
         }
     }
+
+    public class NotPastDateAttribute : ValidationAttribute
+    {
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            if (value == null)
+                return ValidationResult.Success; 
+
+            if (value is not DateTime date)
+                return new ValidationResult("Tipo de data inválido.");
+
+            if (date.Date < DateTime.Today)
+            {
+                return new ValidationResult("A data não pode ser inferior ao dia atual");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    public class DateGreaterThanAttribute : ValidationAttribute
+    {
+        private readonly string _comparisonProperty;
+
+        public DateGreaterThanAttribute(string comparisonProperty)
+        {
+            _comparisonProperty = comparisonProperty;
+        }
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            if (value == null)
+                return ValidationResult.Success;
+
+            var currentValue = (DateTime)value;
+
+            var property = validationContext.ObjectType.GetProperty(_comparisonProperty);
+
+            if (property == null)
+                return new ValidationResult($"Propriedade desconhecida: {_comparisonProperty}");
+
+            var comparisonValue = property.GetValue(validationContext.ObjectInstance);
+
+            if (comparisonValue == null)
+                return ValidationResult.Success;
+
+            var comparisonDate = (DateTime)comparisonValue;
+
+            if (currentValue < comparisonDate)
+            {
+                return new ValidationResult(ErrorMessage ?? "A data de fim de aluguer deve ser superior á data de inicio de aluguer.");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
 }

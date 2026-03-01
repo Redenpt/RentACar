@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.Common;
+using Domain.Validation;
 
 namespace Domain.Entities
 {
@@ -19,9 +20,11 @@ namespace Domain.Entities
         public Vehicle Vehicle { get; set; }
 
         [Required]
+        [NotPastDate]
         public DateTime StartDate { get; set; }
 
         [Required]
+        [DateGreaterThan(nameof(StartDate))]
         public DateTime EndDate { get; set; }
 
         [Required]

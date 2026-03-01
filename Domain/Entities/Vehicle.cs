@@ -32,8 +32,6 @@ namespace Domain.Entities
         [Required]
         public FuelType? FuelType { get; set; }
 
-        public bool IsAvailable { get; set; } = true;
-
         public ICollection<RentalContract> RentalContracts { get; set; }
     }
 }

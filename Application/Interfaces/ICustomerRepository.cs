@@ -15,9 +15,11 @@ namespace Application.Interfaces
         Task AddAsync(Customer customer);              
         Task UpdateAsync(Customer customer);           
         Task DeleteAsync(Guid id);
-        Task<bool> EmailExistsAsync(string email);
-        Task<bool> EmailExistsAsync(string email, Guid userId);
-        Task<bool> DriverLicenseExistsAsync(string driverLicense);
-        Task<bool> DriverLicenseExistsAsync(string driverLicense, Guid customerID);
+        Task<bool> EmailExistsAsync(string email, Guid? userId = null);
+        Task<bool> DriverLicenseExistsAsync(string driverLicense, Guid? customerID = null);
+        Task<bool> HasActiveRentalsAsync(Guid customerID);
+        Task<int> GetTotalActiveCustomersAsync();
+        Task<List<(string CustomerName, int Count)>> GetTopCustomersAsync(int top = 5);
     }
 }
+

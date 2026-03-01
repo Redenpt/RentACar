@@ -79,8 +79,21 @@ namespace Application.Services
             if (!customer.IsActive)
                 throw new EntityInactiveException("Utilizador");
 
+            if (await _customerRepository.HasActiveRentalsAsync(ID))
+                throw new EntityHasActiveRentals("Utilizador");
+
             customer.SoftDelete();
             await _customerRepository.DeleteAsync(customer.ID);
+        }
+
+        public async Task<int> GetTotalActiveCustomersAsync()
+        {
+            return await _customerRepository.GetTotalActiveCustomersAsync();
+        }
+
+        public async Task<List<(string, int)>> GetTopCustomersAsync()
+        {
+            return await _customerRepository.GetTopCustomersAsync();
         }
     }
 }

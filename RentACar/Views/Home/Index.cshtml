@@ -1,8 +1,311 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+@model DashboardViewModel
+<style>
+    .nav-link:hover {
+        background-color: #eef2f7;
+        color: #0d6efd !important;
+    }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+
+    .custom-nav-link {
+        color: #adb5bd !important; 
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .custom-nav-link:hover {
+            background-color: #2c3034; 
+            color: #ffffff !important; 
+            box-shadow: inset 4px 0 0 #0d6efd;
+        }
+
+        .custom-nav-link i {
+            transition: transform 0.3s ease;
+        }
+
+        .custom-nav-link:hover i {
+            color: #0d6efd; 
+            transform: scale(1.1);
+        }
+
+    .nav-link {
+        border: none;
+    }
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block shadow-lg" style="background-color: #1a1d20; border-right: 1px solid #333;">
+            <div class="sidebar-sticky pt-4">
+                <div class="px-4 mb-4">
+                    <h5 class="text-white fw-bold d-flex align-items-center">
+                        <i class="bi bi-speedometer2 me-2 text-primary"></i> Painel
+                    </h5>
+                </div>
+
+                <ul class="nav flex-column px-2">
+                    <li class="nav-item mb-2">
+                        <a class="nav-link d-flex align-items-center py-3 px-3 rounded-3 custom-nav-link"
+                           asp-controller="Customers" asp-action="ManageCustomers">
+                            <i class="bi bi-people me-3 fs-5"></i>
+                            <span>Gestão de Clientes</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item mb-2">
+                        <a class="nav-link d-flex align-items-center py-3 px-3 rounded-3 custom-nav-link"
+                           asp-controller="Vehicles" asp-action="ManageVehicles">
+                            <i class="bi bi-car-front me-3 fs-5"></i>
+                            <span>Gestão de Veículos</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item mb-2">
+                        <a class="nav-link d-flex align-items-center py-3 px-3 rounded-3 custom-nav-link"
+                           asp-controller="RentalContracts" asp-action="ManageRentalContracts">
+                            <i class="bi bi-file-earmark-text me-3 fs-5"></i>
+                            <span>Contratos de Aluguer</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <hr class="mx-3" style="color: #444;">
+            </div>
+        </nav>
+
+        <main class="col-md-9 ml-sm-auto col-lg-10 px-4">
+
+            <h2 class="mb-4">Dashboards</h2>
+
+            <div class="row">
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body text-center">
+                            <h5>Total Clientes</h5>
+                            <h2>@Model.TotalCustomers</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body text-center">
+                            <h5>Total Veículos</h5>
+                            <h2>@Model.TotalVehicles</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body text-center">
+                            <h5>Contratos</h5>
+
+                            <div class="d-flex justify-content-between mt-4">
+
+                                <div class="flex-fill pe-3 border-end">
+                                    <h6>Ativos</h6>
+                                    <h3>@Model.ActiveContracts</h3>
+                                </div>
+
+                                <div class="flex-fill ps-3">
+                                    <h6>Agendados</h6>
+                                    <h3>@Model.ScheduledContracts</h3>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row mt-4">
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Disponibilidade dos veículos</div>
+                        <div class="card-body">
+                            <canvas id="fleetChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Contratos de Aluguer por Mês</div>
+                        <div class="card-body">
+                            <canvas id="contractsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+            <script>
+                var ctx1 = document.getElementById('fleetChart').getContext('2d');
+
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Disponíveis', 'Alugados'],
+                        datasets: [{
+                            data: [@Model.AvailableVehicles, @Model.RentedVehicles],
+                            backgroundColor: ['#28a745', '#dc3545']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            datalabels: {
+                                color: 'white',
+                                font: { weight: 'bold', size: 16 },
+                                formatter: function(value, context) {
+                                    var total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    var percentage = ((value / total) * 100).toFixed(1);
+                                    return value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+
+                var ctx2 = document.getElementById('contractsChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: @Html.Raw(Json.Serialize(Model.ContractsPerMonth.Keys)),
+                        datasets: [{
+                            label: 'Contratos de Aluguer',
+                            data: @Html.Raw(Json.Serialize(Model.ContractsPerMonth.Values)),
+                            backgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0 
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+
+            <div class="row mt-4">
+
+                <div class="col-md-6 mt-4">
+                    <div class="card">
+                        <div class="card-header">Contratos de Aluguer a terminar nos próximos 7 dias</div>
+                        <div class="card-body table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Veículo</th>
+                                        <th>Fim</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var c in Model.ContractsEndingInNextDays)
+                                    {
+                                        <tr>
+                                            <td>@c.Customer.FullName</td>
+                                            <td>@c.Vehicle.LicensePlate</td>
+                                            <td>@c.EndDate.ToString("dd/MM/yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Top Clientes que mais alugam</div>
+                        <div class="card-body">
+                            <canvas id="topCustomersChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Top Veículos Mais Alugados</div>
+                        <div class="card-body">
+                            <canvas id="topVehiclesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    // --- Top Clientes ---
+                    var ctxCustomers = document.getElementById('topCustomersChart').getContext('2d');
+                    new Chart(ctxCustomers, {
+                        type: 'bar',
+                        data: {
+                            labels: @Html.Raw(Json.Serialize(Model.TopCustomers.Select(c => c.Name))),
+                            datasets: [{
+                                label: 'Contratos de Aluguer',
+                                data: @Html.Raw(Json.Serialize(Model.TopCustomers.Select(c => c.Count))),
+                                backgroundColor: '#007bff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0,
+                                        stepSize: 1
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // --- Top Veículos ---
+                    var ctxVehicles = document.getElementById('topVehiclesChart').getContext('2d');
+                    new Chart(ctxVehicles, {
+                        type: 'bar',
+                        data: {
+                            labels: @Html.Raw(Json.Serialize(Model.TopVehicles.Select(v => v.Name))),
+                            datasets: [{
+                                label: 'Contratos de Aluguer',
+                                data: @Html.Raw(Json.Serialize(Model.TopVehicles.Select(v => v.Count))),
+                                backgroundColor: '#28a745'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0, 
+                                        stepSize: 1  
+                                    }
+                                }
+                            }
+                        }
+                    });
+                </script>
+            </div>
+        </main>
+    </div>
 </div>

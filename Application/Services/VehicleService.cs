@@ -76,8 +76,31 @@ namespace Application.Services
             if (!vehicle.IsActive)
                 throw new EntityInactiveException("Veículo");
 
+            if (await _vehicleRepository.HasActiveRentalsAsync(ID))
+                throw new EntityHasActiveRentals("Veículo");
+
             vehicle.SoftDelete();
             await _vehicleRepository.DeleteAsync(vehicle.ID);
+        }
+
+        public async Task<bool> HasCurrentlyActiveRentalAsync(Guid vehicleId)
+        {
+            return await _vehicleRepository.HasCurrentlyActiveRentalAsync(vehicleId);
+        }
+
+        public async Task<int> GetTotalActiveVehiclesAsync()
+        {
+            return await _vehicleRepository.GetTotalActiveVehiclesAsync();
+        }
+
+        public async Task<int> GetCurrentlyRentedVehiclesCountAsync()
+        {
+            return await _vehicleRepository.GetCurrentlyRentedVehiclesCountAsync();
+        }
+
+        public async Task<List<(string, int)>> GetTopVehiclesAsync()
+        {
+            return await _vehicleRepository.GetTopVehiclesAsync();
         }
     }
 }

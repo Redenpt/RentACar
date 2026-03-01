@@ -61,22 +61,65 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public async Task<bool> LicensePlateExistsAsync(string licensePlate)
+        //pode ignorar o proprio veículo
+        public async Task<bool> LicensePlateExistsAsync(string licensePlate, Guid? vehicleID = null)
         {
             return await _context.Vehicles
-                .AnyAsync(v => 
-                            v.IsActive &&
-                            v.LicensePlate.ToUpper() == licensePlate.ToUpper());
+                .AnyAsync(v => v.IsActive
+                            && v.LicensePlate.ToUpper() == licensePlate.ToUpper()
+                            && (vehicleID == null || v.ID != vehicleID));
         }
 
-        //para ignorar o proprio veículo
-        public async Task<bool> LicensePlateExistsAsync(string licensePlate, Guid vehicleID)
+        public async Task<bool> HasActiveRentalsAsync(Guid vehicleId)
+        {
+            var today = DateTime.Today;
+            return await _context.RentalContracts
+                .AnyAsync(rc => rc.VehicleID == vehicleId
+                             && rc.EndDate >= today
+                             && rc.IsActive);
+        }
+
+        public async Task<bool> HasCurrentlyActiveRentalAsync(Guid vehicleId)
+        {
+            var today = DateTime.Today;
+            return await _context.RentalContracts
+                .AnyAsync(rc => rc.VehicleID == vehicleId
+                             && rc.StartDate <= today   
+                             && rc.EndDate >= today     
+                             && rc.IsActive);           
+        }
+
+        public async Task<int> GetTotalActiveVehiclesAsync()
         {
             return await _context.Vehicles
-                .AnyAsync(v => 
-                            v.IsActive &&
-                            v.LicensePlate.ToUpper() == licensePlate.ToUpper() &&
-                            v.ID != vehicleID);
+                                 .Where(v => v.IsActive)
+                                 .CountAsync();
+        }
+
+        public async Task<int> GetCurrentlyRentedVehiclesCountAsync()
+        {
+            var today = DateTime.Today;
+
+            return await _context.RentalContracts
+                .Where(rc => rc.IsActive
+                          && rc.StartDate <= today
+                          && rc.EndDate >= today)
+                .Select(rc => rc.VehicleID)
+                .Distinct()
+                .CountAsync();
+        }
+
+        public async Task<List<(string VehicleLicense, int Count)>> GetTopVehiclesAsync(int top = 5)
+        {
+            return await _context.RentalContracts
+                .Where(rc => rc.IsActive)
+                .GroupBy(rc => rc.Vehicle.LicensePlate)
+                .Select(g => new { VehicleLicense = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(top)
+                .AsNoTracking()
+                .ToListAsync()
+                .ContinueWith(t => t.Result.Select(x => (x.VehicleLicense, x.Count)).ToList());
         }
     }
 }

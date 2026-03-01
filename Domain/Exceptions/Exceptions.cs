@@ -35,4 +35,16 @@ namespace Domain.Exceptions
         public LicensePlateRequiredException()
             : base("A matrícula do veículo é obrigatória.") { }
     }
+
+    public class VehicleAlreadyRentedException : Exception
+    {
+        public VehicleAlreadyRentedException()
+            : base($"O veículo selecionado já tem um contrato de aluguer para o periodo selecionado."){ }
+    }
+
+    public class EntityHasActiveRentals : Exception
+    {
+        public EntityHasActiveRentals(string entityName)
+            : base($"O {entityName} selecionado não pode ser eliminado porque tem contratos de aluguer ativos ou pendentes") { }
+    }
 }

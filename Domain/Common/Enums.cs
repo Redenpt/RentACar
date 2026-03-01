@@ -15,11 +15,10 @@ namespace Domain.Common
         LPG = 5
     }
 
-    public enum CarStatus
+    public enum VehicleStatus
     {
         Available = 1,
         Rented = 2,
-        Maintenance = 3
     }
 
     public enum RentalStatus
@@ -27,6 +26,5 @@ namespace Domain.Common
         Pending = 1,
         Active = 2,
         Completed = 3,
-        Cancelled = 4
     }
 }
