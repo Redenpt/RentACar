@@ -27,7 +27,7 @@ namespace RentACar.Controllers
                 {
                     ID = v.ID,
                     Brand = v.Brand,
-                    VehicleModel = v.Model,
+                    VehicleModel = v.VehicleModel,
                     LicensePlate = v.LicensePlate,
                     Year = v.Year,
                     FuelType = v.FuelType,
@@ -63,7 +63,7 @@ namespace RentACar.Controllers
                 var vehicle = new Vehicle
                 {
                     Brand = model.Brand,
-                    Model = model.VehicleModel,
+                    VehicleModel = model.VehicleModel,
                     LicensePlate = model.LicensePlate,
                     Year = model.Year,
                     FuelType = model.FuelType,
@@ -107,7 +107,7 @@ namespace RentACar.Controllers
                 var vehicle = await _vehicleService.GetVehicleByIdAsync(model.ID);
 
                 vehicle.Brand = model.Brand;
-                vehicle.Model = model.VehicleModel;
+                vehicle.VehicleModel = model.VehicleModel;
                 vehicle.LicensePlate = model.LicensePlate;
                 vehicle.Year = model.Year;
                 vehicle.FuelType = model.FuelType;

@@ -18,7 +18,7 @@ namespace Domain.Entities
 
         [Required]
         [MaxLength(50)]
-        public string Model { get; set; }
+        public string VehicleModel { get; set; }
 
         [Required]
         [MaxLength(15)]

@@ -53,7 +53,7 @@ namespace RentACar.Controllers
                                     {
                                         ID = rc.Vehicle.ID,
                                         Brand = rc.Vehicle.Brand,
-                                        VehicleModel = rc.Vehicle.Model,
+                                        VehicleModel = rc.Vehicle.VehicleModel,
                                         LicensePlate = rc.Vehicle.LicensePlate,
                                         Year = rc.Vehicle.Year,
                                         FuelType = rc.Vehicle.FuelType
@@ -79,7 +79,7 @@ namespace RentACar.Controllers
                                         {
                                             ID = v.ID,
                                             Brand = v.Brand,
-                                            VehicleModel = v.Model,
+                                            VehicleModel = v.VehicleModel,
                                             LicensePlate = v.LicensePlate,
                                             Year = v.Year,
                                             FuelType = v.FuelType,
