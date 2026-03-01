@@ -2,6 +2,16 @@
 
 ASP.NET Core application for vehicle rental management.
 
+## 📝 Prerequisites
+
+Before running the project, make sure you have the following installed:
+
+- Git
+- .NET 8 SDK
+- SQL Server 
+
+---
+
 ## 📦 Technologies
 
 - .NET 8
