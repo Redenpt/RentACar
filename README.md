@@ -1,8 +1,8 @@
 ﻿# 🚗 Rent A Car
 
-Aplicação ASP.NET Core para gestão de aluguer de veículos.
+ASP.NET Core application for vehicle rental management.
 
-## 📦 Tecnologias
+## 📦 Technologies
 
 - .NET 8
 - ASP.NET Core MVC
@@ -11,36 +11,36 @@ Aplicação ASP.NET Core para gestão de aluguer de veículos.
 
 ---
 
-## ⚙️ Como executar o projeto
+## ⚙️ How to Run the Project
 
-### 1️⃣ Clonar o repositório
+### 1️⃣ Clone the repository
 
-git clone <url-do-repo>
+git clone <repository-url>
 cd RentACar
 
-### 2️⃣ Restaurar dependências
+### 2️⃣ Restore dependencies
 
 dotnet restore
 
-### 3️⃣ Executar
+### 3️⃣ Run the application
 
 dotnet run
 
 ---
 
-## 🗄 Base de Dados
+## 🗄 Database
 
-A base de dados é criada automaticamente na primeira execução.
+The database is automatically created on the first run.
 
-- As migrations são aplicadas automaticamente
-- Os dados iniciais (utilizadores, veículos e contratos) são populados via Seed
+- Migrations are applied automatically
+- Initial data (users, vehicles, and rental contracts) is populated via Seed
 
-Não é necessário executar `dotnet ef database update`.
+There is no need to run `dotnet ef database update`.
 
 ---
 
-## 🔑 Funcionalidades
+## 🔑 Features
 
-- Gestão de Clientes
-- Gestão de Veículos
-- Gestão de Contratos de Aluguer
+- Customer Management
+- Vehicle Management
+- Rental Contract Management
