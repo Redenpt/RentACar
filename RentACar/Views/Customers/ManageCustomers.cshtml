@@ -42,7 +42,7 @@
             <col style="width: 15%">
         </colgroup>
         <thead class="table-dark">
-            <tr>
+            <tr class="text-center">
                 <th>Nome Completo</th>
                 <th>Email</th>
                 <th>Telefone</th>
@@ -55,7 +55,7 @@
             {
                 @foreach (var customer in Model)
                 {
-                    <tr>
+                    <tr class="text-center">
                         <td>@customer.FullName</td>
                         <td>@customer.Email</td>
                         <td>@customer.Phone</td>

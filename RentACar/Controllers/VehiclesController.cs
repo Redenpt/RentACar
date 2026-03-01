@@ -1,4 +1,5 @@
 ﻿using Application.Services;
+using Domain.Common;
 using Domain.Entities;
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
@@ -19,13 +20,29 @@ namespace RentACar.Controllers
         public async Task<IActionResult> ManageVehicles()
         {
             var vehicles = await _vehicleService.GetAllVehiclesAsync();
+            var vehicleViewModels = new List<VehicleViewModel>();
+            foreach (var v in vehicles)
+            {
+                vehicleViewModels.Add(new VehicleViewModel
+                {
+                    ID = v.ID,
+                    Brand = v.Brand,
+                    VehicleModel = v.Model,
+                    LicensePlate = v.LicensePlate,
+                    Year = v.Year,
+                    FuelType = v.FuelType,
+                    Status = await _vehicleService.HasCurrentlyActiveRentalAsync(v.ID)
+                             ? VehicleStatus.Rented
+                             : VehicleStatus.Available
+                });
+            }
             var operationResult = TempData.Get<OperationResult>("OperationResult");
             if (operationResult != null)
             {
                 ViewBag.OperationResult = operationResult;
             }
             
-            return View(vehicles);
+            return View(vehicleViewModels);
         }
 
         [HttpPost]
