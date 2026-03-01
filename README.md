@@ -21,13 +21,13 @@ cd RentACar
 ```
 
 ### 2️⃣ Restore dependencies
-
+```bash
 dotnet restore
-
+```
 ### 3️⃣ Run the application
-
+```bash
 dotnet run
-
+```
 ---
 
 ## 🗄 Database
