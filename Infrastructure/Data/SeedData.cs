@@ -87,7 +87,7 @@ namespace Infrastructure.Data
                     {
                         ID = new Guid("d4411670-bf74-47f1-80b9-0ab9f2cc6c8b"),
                         Brand = "Peugeot",
-                        Model = "208",
+                        VehicleModel = "208",
                         LicensePlate = "MN-89-OP",
                         Year = 2020,
                         FuelType = FuelType.Gasoline,
@@ -100,7 +100,7 @@ namespace Infrastructure.Data
                     {
                         ID = new Guid("0a778536-6d4f-4e00-9086-1c08dd8da646"),
                         Brand = "Renault",
-                        Model = "Clio",
+                        VehicleModel = "Clio",
                         LicensePlate = "EF-45-GH",
                         Year = 2019,
                         FuelType = FuelType.Diesel,
@@ -113,7 +113,7 @@ namespace Infrastructure.Data
                     {
                         ID = new Guid("3dd0fa91-8390-44f0-b268-3463fd29703d"),
                         Brand = "Tesla",
-                        Model = "Model 3",
+                        VehicleModel = "Model 3",
                         LicensePlate = "QR-12-ST",
                         Year = 2023,
                         FuelType = FuelType.Electric,
@@ -126,7 +126,7 @@ namespace Infrastructure.Data
                     {
                         ID = new Guid("f1c8118a-c0a9-41ba-9bef-8ed3654ab9d1"),
                         Brand = "Toyota",
-                        Model = "Corolla",
+                        VehicleModel = "Corolla",
                         LicensePlate = "AB-23-CD",
                         Year = 2021,
                         FuelType = FuelType.Gasoline,
@@ -139,7 +139,7 @@ namespace Infrastructure.Data
                     {
                         ID = new Guid("74831c70-2b8b-4ebc-8e18-ecc7d29fc510"),
                         Brand = "BMW",
-                        Model = "320d",
+                        VehicleModel = "320d",
                         LicensePlate = "IJ-67-KL",
                         Year = 2022,
                         FuelType = FuelType.Diesel,
