@@ -17,18 +17,25 @@ ASP.NET Core application for vehicle rental management.
 
 ```bash
 git clone https://github.com/Redenpt/RentACar.git
-cd RentACar
 ```
 
-### 2️⃣ Restore dependencies
+### 2️⃣ Go to the project folder
+```bash
+cd RentACar/RentACar
+```
+### 3️⃣ Restore dependencies
 ```bash
 dotnet restore
 ```
-### 3️⃣ Run the application
+### 4️⃣ Run the application
 ```bash
 dotnet run
 ```
 ---
+
+## 💡 Tip: After running, check the console output for a line like: Now listening on: http://localhost:5228
+### Copy this URL to your browser to open the application
+
 
 ## 🗄 Database
 
