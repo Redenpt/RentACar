@@ -1,0 +1,398 @@
+﻿@{
+    Layout = "_Layout";
+}
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Domain.Common
+@using Domain.Entities
+@using RentACar.Helpers
+@model IEnumerable<VehicleViewModel>
+@{
+    var operation = ViewBag.OperationResult as OperationResult;
+}
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    .status-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+</style>
+
+<div class="container-fluid px-5">
+    @if (operation != null && operation.Success && operation.OperationType == OperationType.None)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @operation.OperationMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (operation != null && !operation.Success && operation.OperationType == OperationType.None)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @operation.OperationMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    <h2>Veículos</h2>
+    <hr class="border border-1 border-secondary opacity-50">
+
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createVehicleModal">Novo Veículo</button>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <colgroup>
+            <col style="width: 15%">
+            <col style="width: 20%">
+            <col style="width: 15%">
+            <col style="width: 10%">
+            <col style="width: 15%">
+            <col style="width: 10%">
+            <col style="width: 15%">
+        </colgroup>
+        <thead class="table-dark">
+            <tr class="text-center">
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Matrícula</th>
+                <th>Ano</th>
+                <th>Combustível</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var vehicle in Model)
+                {
+                    <tr class="text-center">
+                        <td>@vehicle.Brand</td>
+                        <td>@vehicle.VehicleModel</td>
+                        <td>@vehicle.LicensePlate</td>
+                        <td>@vehicle.Year</td>
+                        <td>@vehicle.FuelType</td>
+                        <td class="text-center">
+                            <span class="badge @(vehicle.Status == VehicleStatus.Rented ? "bg-danger" :vehicle.Status == VehicleStatus.Available ? "bg-success" : "bg-secondary")">
+                                @switch (vehicle.Status)
+                                {
+                                    case VehicleStatus.Rented:
+                                        @:Alugado
+                                        break;
+                                    case VehicleStatus.Available:
+                                        @:Disponível
+                                        break;
+                                }
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-warning" onclick="openEditVehicleModal('@vehicle.ID')">Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="openDeleteVehicleModal('@vehicle.ID')">Remover</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-muted">
+                        Não existem veículos registados.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@* ===================== MODAL ADICIONAR VEÍCULO ===================== *@
+@{
+    VehicleViewModel? createVehicleModel = null;
+
+    if (operation?.OperationType == OperationType.Create && operation.Data is VehicleViewModel createmodel)
+    {
+        createVehicleModel = createmodel;
+    }
+}
+<form asp-controller="Vehicles" asp-action="AddVehicle" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal fade" id="createVehicleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Registar Novo Veículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <!-- Mensagens de erro -->
+                <div class="modal-body">
+                    @if (operation?.Errors?.Any() == true && operation?.OperationType == OperationType.Create)
+                    {
+                        <div class="alert alert-danger">
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var error in operation.Errors)
+                                {
+                                    <li>@error</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    <!-- Form do Veículo -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="Brand" class="form-label">Marca</label>
+                            <input type="text" name="Brand" class="form-control" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="VehicleModel" class="form-label">Modelo</label>
+                            <input type="text" name="VehicleModel" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="LicensePlate" class="form-label">Matrícula</label>
+                            <input type="text" name="LicensePlate" class="form-control" placeholder="AA-00-BB"/>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="Year" class="form-label">Ano de Fabrico</label>
+                            <select id="Year" name="Year" class="form-control">
+                                <option value="">-- Selecione o ano--</option>
+                                @for (int year = DateTime.Now.Year; year >= 1900; year--)
+                                {
+                                    <option value="@year">@year</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="FuelType">Combustível</label>
+                            <select name="FuelType" id="FuelType" class="form-control">
+                                <option value="">-- Selecione o tipo de combustível--</option>
+                                @foreach (FuelType fuel in Enum.GetValues(typeof(FuelType)))
+                                {
+                                    <option value="@fuel">@fuel</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Registar Veículo
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (operation?.OperationType == OperationType.Create && !operation.Success)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var modal = new bootstrap.Modal(document.getElementById('createVehicleModal'));
+            modal.show();
+        });
+    </script>
+}
+@* ============================================================== *@
+@* ===================== MODAL EDITAR VEÍCULO ===================== *@
+@{
+    VehicleViewModel? updateVehicleModel = null;
+
+    if (operation?.OperationType == OperationType.Update && operation.Data is VehicleViewModel updateModel)
+    {
+        updateVehicleModel = updateModel;
+    }
+    var failedVehicleId = updateVehicleModel?.ID.ToString(); // null-safe
+}
+<form asp-controller="Vehicles" asp-action="UpdateVehicle" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal fade" id="updateVehicleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header bg-warning text-black">
+                    <h5 class="modal-title">Editar Veículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <!-- Mensagens de erro -->
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="updateVehicleModalErrors" style="display:none">
+                        <ul class="list-unstyled mb-0">
+                            @if (operation?.Errors?.Any() == true && operation?.OperationType == OperationType.Update)
+                            {
+                                @foreach (var error in operation.Errors)
+                                {
+                                    <li>@error</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <!-- Form do veículo -->
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="Brand" class="form-label">Marca</label>
+                            <input type="text" id="Brand" name="Brand" class="form-control" value="@updateVehicleModel?.Brand" />
+                            <input type="hidden" name="ID" value="@updateVehicleModel?.ID" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="VehicleModel" class="form-label">Modelo</label>
+                            <input type="text" id="VehicleModel" name="VehicleModel" class="form-control" value="@updateVehicleModel?.VehicleModel" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="LicensePlate" class="form-label">Matrícula</label>
+                            <input type="text" id="LicensePlate" name="LicensePlate" class="form-control" value="@updateVehicleModel?.LicensePlate" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="Year" class="form-label">Ano de Fabrico</label>
+                            <select id="Year" name="Year" class="form-control">
+                                <option value="">-- Selecione o ano --</option>
+                                @for (int year = DateTime.Now.Year; year >= 1900; year--)
+                                {
+                                    var isSelected = updateVehicleModel?.Year == year ? "selected" : "";
+                                    @:<option value="@year" @isSelected>@year</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="FuelType" class="form-label">Combustível</label>
+                            <select id="FuelType" name="FuelType" class="form-control">
+                                <option value="">-- Selecione --</option>
+                                @foreach (FuelType fuel in Enum.GetValues(typeof(FuelType)))
+                                {
+                                    var intValue = (int)fuel;
+                                    var isSelected = updateVehicleModel?.FuelType == fuel ? "selected" : "";
+                                    @:<option value="@intValue" @isSelected>@fuel</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        Guardar Alterações
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var vehicles = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+    function getVehicleIndex(vehicleId) {
+        return vehicles.findIndex(c => c.ID === vehicleId);
+    }
+
+    function openEditVehicleModal(vehicleId) {
+        var index = getVehicleIndex(vehicleId);
+        if (index === -1) return;
+        var vehicle = vehicles[index];
+        var modalEl = document.getElementById('updateVehicleModal');
+        modalEl.querySelector('input[name="ID"]').value = vehicle.ID;
+        modalEl.querySelector('input[name="Brand"]').value = vehicle.Brand;
+        modalEl.querySelector('input[name="VehicleModel"]').value = vehicle.Model;
+        modalEl.querySelector('input[name="LicensePlate"]').value = vehicle.LicensePlate;
+        modalEl.querySelector('select[name="Year"]').value = vehicle.Year;
+        modalEl.querySelector('select[name="FuelType"]').value = vehicle.FuelType;
+
+        var failedVehicleId = '@failedVehicleId';
+        var errorsEl = document.getElementById('updateVehicleModalErrors');
+        if (errorsEl && vehicle.ID === failedVehicleId) {
+            errorsEl.style.display = 'block';
+        }
+        else{
+            errorsEl.style.display = 'none';
+        }
+
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+</script>
+@if (updateVehicleModel != null)
+{
+    <script>
+        var failedVehicleId = '@failedVehicleId';
+        openEditVehicleModal(failedVehicleId);
+    </script>
+}
+
+@* ============================================================== *@
+@* ===================== MODAL ELIMINAR VEÍCULO ===================== *@
+<form asp-controller="Vehicles" asp-action="DeleteVehicle" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal fade" id="deleteVehicleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Eliminar Veículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <input type="hidden" name="vehicleID" />
+                    <p>Tem a certeza que quer eliminar o veículo <strong id="deleteVehicleName"></strong>?</p>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        Eliminar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    function openDeleteVehicleModal(vehicleId) {
+        var index = getVehicleIndex(vehicleId);
+        if (index === -1) return;
+        var vehicle = vehicles[index];
+
+        var modalEl = document.getElementById('deleteVehicleModal');
+        modalEl.querySelector('input[name="vehicleID"]').value = vehicle.ID;
+        modalEl.querySelector('#deleteVehicleName').innerText = vehicle.LicensePlate;
+
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+</script>
+@* ============================================================== *@

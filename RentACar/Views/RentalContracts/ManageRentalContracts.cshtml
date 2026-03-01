@@ -1,0 +1,451 @@
+﻿@{
+    Layout = "_Layout";
+}
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Domain.Common
+@using Domain.Entities
+@using RentACar.Helpers
+@model IEnumerable<RentalContractViewModel>
+@{
+    var operation = ViewBag.OperationResult as OperationResult;
+    var customers = ViewBag.Customers as List<CustomerViewModel>;
+    var vehicles = ViewBag.Vehicles as List<VehicleViewModel>;
+}
+<style>
+    .status-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+</style>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<script>
+    var customers = @Html.Raw(Json.Serialize(customers));
+    var vehicles = @Html.Raw(Json.Serialize(vehicles));
+    var rentalContracts = @Html.Raw(Json.Serialize(Model));
+    console.log(rentalContracts);
+
+
+    function updateCustomerInfo() {
+        var select = document.getElementById('CustomerSelect');
+        var selectedId = select.value;
+
+        var infoDiv = document.getElementById('customerInfo');
+
+        if(!selectedId){
+            infoDiv.innerHTML = ''; 
+            infoDiv.className = '';
+            return;
+        }
+
+        var customer = customers.find(c => c.id == selectedId);
+        if(customer){
+            infoDiv.innerHTML = `
+                <div class="row small">
+                    <div class="col-md-6"><strong>Nome:</strong> ${customer.fullName}</div>
+                    <div class="col-md-6"><strong>Email:</strong> ${customer.email}</div>
+                    <div class="col-md-6"><strong>Telefone:</strong> ${customer.phone}</div>
+                    <div class="col-md-6"><strong>Carta de Condução:</strong> ${customer.drivingLicense}</div>
+                </div>
+            `;
+
+            infoDiv.className = 'p-2 border rounded text-muted';
+        } else {
+            infoDiv.innerHTML = '';
+            infoDiv.className = '';
+        }
+    }
+
+        function updateVehicleInfo() {
+        var select = document.getElementById('VehicleSelect');
+        var selectedId = select.value;
+
+        var infoDiv = document.getElementById('vehicleInfo');
+
+        if(!selectedId){
+            infoDiv.innerHTML = '';
+            infoDiv.className = '';
+            return;
+        }
+
+        var fuelTypeMap = {
+            1: "Gasolina",
+            2: "Diesel",
+            3: "Eléctrico",
+            4: "Híbrido",
+            5: "Gás"
+        };
+
+        var vehicle = vehicles.find(c => c.id == selectedId);
+        if(vehicle){
+            var fuelTypeText = fuelTypeMap[vehicle.fuelType] ?? "Desconhecido";
+            infoDiv.innerHTML = `
+                <div class="row small">
+                    <div class="col-md-6"><strong>Marca:</strong> ${vehicle.brand}</div>
+                    <div class="col-md-6"><strong>Modelo:</strong> ${vehicle.vehicleModel}</div>
+                    <div class="col-md-6"><strong>Matrícula:</strong> ${vehicle.licensePlate}</div>
+                    <div class="col-md-6"><strong>Ano:</strong> ${vehicle.year}</div>
+                    <div class="col-md-6"><strong>Combustível:</strong> ${fuelTypeText}</div>
+                </div>
+            `;
+
+            infoDiv.className = 'p-2 border rounded text-muted';
+        } else {
+            infoDiv.innerHTML = '';
+            infoDiv.className = '';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('CustomerSelect').addEventListener('change', updateCustomerInfo);
+        document.getElementById('VehicleSelect').addEventListener('change', updateVehicleInfo);
+    });
+</script>
+
+<div class="container-fluid px-5">
+    @if (operation != null && operation.Success && operation.OperationType == OperationType.None)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @operation.OperationMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (operation != null && !operation.Success && operation.OperationType == OperationType.None)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @operation.OperationMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    <h2>Contratos de Aluguer</h2>
+    <hr class="border border-1 border-secondary opacity-50">
+
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRentalContractModal">Novo Contrato de Aluguer</button>
+    </div>
+
+    <div>
+        @if (Model.Any())
+        {
+            @foreach (var rentalContract in Model)
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">ID do contrato: @rentalContract.ID</h5>
+
+                        <span class="badge @(rentalContract.Status == RentalStatus.Active ? "bg-success" : rentalContract.Status == RentalStatus.Pending ? "bg-warning" : "bg-secondary")">
+                            @switch (rentalContract.Status)
+                            {
+                                case RentalStatus.Active:
+                                    @:Ativo
+                                    break;
+                                case RentalStatus.Pending:
+                                    @:Pendente
+                                    break;
+                                case RentalStatus.Completed:
+                                    @:Concluído
+                                    break;
+                            }
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Cliente -->
+                            <div class="col-md-4 border-end bg-primary bg-opacity-10">
+                                <h6 class="fw-bold text-dark mb-2 text-center">Cliente</h6>
+                                <hr class="my-1">
+                                <div class="row mb-1">
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Email:</label>
+                                        <span class="d-block">@rentalContract.Customer.Email</span>
+                                    </div>
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Telefone:</label>
+                                        <span class="d-block">@rentalContract.Customer.Phone</span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-1">
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Nome:</label>
+                                        <span class="d-block">@rentalContract.Customer.FullName</span>
+                                    </div>
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Carta de Condução:</label>
+                                        <span class="d-block">@rentalContract.Customer.DrivingLicense</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Veículo -->
+                            <div class="col-md-4 border-end bg-success bg-opacity-10">
+                                <h6 class="fw-bold text-dark mb-2 text-center">Veículo</h6>
+                                <hr class="my-1">
+                                <div class="row mb-1">
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Marca:</label>
+                                        <span class="d-block">@rentalContract.Vehicle.Brand</span>
+                                    </div>
+
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Modelo:</label>
+                                        <span class="d-block">@rentalContract.Vehicle.VehicleModel</span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-1">
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Matrícula:</label>
+                                        <span class="d-block">@rentalContract.Vehicle.LicensePlate</span>
+                                    </div>
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Ano:</label>
+                                        <span class="d-block">@rentalContract.Vehicle.Year</span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-1">
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Combustível:</label>
+                                        <span class="d-block">@rentalContract.Vehicle.FuelType</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contrato -->
+                            <div class="col-md-3 border-end bg-warning bg-opacity-10">
+                                <h6 class="fw-bold text-dark mb-2 text-center">Contrato</h6>
+                                <hr class="my-1">
+                                <div class="row mb-1">
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Data Início:</label>
+                                        <span class="d-block">@rentalContract.StartDate?.ToString("dd/MM/yyyy")</span>
+                                    </div>
+
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Data Fim:</label>
+                                        <span class="d-block">@rentalContract.EndDate?.ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-1">
+                                    <div class="col">
+                                        <label class="form-label fw-bold mb-0">Kms Iniciais:</label>
+                                        <span class="d-block">@rentalContract.InitialMileage</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-center justify-content-center">
+                                <!-- Botão -->
+                                @if (rentalContract.Status == RentalStatus.Pending)
+                                {
+                                    <div class="mt-3">
+                                        <button class="btn btn-sm btn-danger"
+                                                onclick="openDeleteRentalContractModal('@rentalContract.ID')">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center text-muted my-3">
+                Não existem contratos de aluguer registados.
+            </div>
+        }
+    </div>
+</div>
+@* ===================== MODAL ADICIONAR CONTRATO ===================== *@
+@{
+    RentalContractViewModel? createRentalContractModel = null;
+
+    if (operation?.OperationType == OperationType.Create && operation.Data is RentalContractViewModel createmodel)
+    {
+        createRentalContractModel = createmodel;
+    }
+}
+<form asp-controller="RentalContracts" asp-action="AddRentalContract" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal fade" id="createRentalContractModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Registar Novo Contrato de Aluguer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <!-- Mensagens de erro -->
+                <div class="modal-body">
+                    @if (operation?.Errors?.Any() == true && operation?.OperationType == OperationType.Create)
+                    {
+                        <div class="alert alert-danger">
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var error in operation.Errors)
+                                {
+                                    <li>@error</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    <!-- Form do contrato -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="CustomerID" class="form-label">Cliente</label>
+                            <select name="CustomerID" id="CustomerSelect" class="form-select">
+                                <option value="">-- Selecione um cliente --</option>
+                                @foreach (var customer in customers)
+                                {
+                                    <option value="@customer.ID">
+                                        @customer.FullName
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="VehicleID" class="form-label">Veículo</label>
+                            <select name="VehicleID" id="VehicleSelect" class="form-select">
+                                <option value="">-- Selecione um veículo --</option>
+                                @foreach (var vehicle in vehicles)
+                                {
+                                    <option value="@vehicle.ID">
+                                        @vehicle.LicensePlate
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div id="customerInfo">
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div id="vehicleInfo">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="StartDate" class="form-label">Data de Início</label>
+                            <input type="date" name="StartDate" id="StartDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")"min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="EndDate" class="form-label">Data de Fim</label>
+                            <input type="date" name="EndDate" id="EndDate" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                        <script> //atualiza a data de fim do aluguer, para ser sempre igual ao superior á selecionada como data de inicio
+                            
+                            const startDateInput = document.getElementById('StartDate');
+                            const endDateInput = document.getElementById('EndDate');
+
+                            startDateInput.addEventListener('change', function() {
+                                endDateInput.min = this.value;
+
+                                if (endDateInput.value < this.value) {
+                                    endDateInput.value = this.value;
+                                }
+                            });
+                        </script>
+
+                        <div class="col-md-4">
+                            <label for="InitialMileage" class="form-label">Quilometragem Inicial</label>
+                            <input type="number" name="InitialMileage" id="InitialMileage" class="form-control" min="0" placeholder="0" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Registar Contrato de Aluguer
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (operation?.OperationType == OperationType.Create && !operation.Success)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var modal = new bootstrap.Modal(document.getElementById('createRentalContractModal'));
+            modal.show();
+        });
+    </script>
+}
+@* ============================================================== *@
+
+@* ===================== MODAL ELIMINAR CONTRATO ===================== *@
+<form asp-controller="RentalContracts" asp-action="DeleteRentalContract" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal fade" id="deleteRentalContractModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Cancelar Contrato de Aluguer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <input type="hidden" name="rentalContractID" />
+                    <p>Tem a certeza que quer cancelar este contrato de aluguer?</p>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Retroceder
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        Cancelar contrato
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    function getRentalContractIndex(rentalContractId) {
+        return rentalContracts.findIndex(rc => rc.id === rentalContractId);
+    }
+
+    function openDeleteRentalContractModal(rentalContractId) {
+        var index = getRentalContractIndex(rentalContractId);
+        if (index === -1) return;
+        var rentalContract = rentalContracts[index];
+
+        var modalEl = document.getElementById('deleteRentalContractModal');
+        modalEl.querySelector('input[name="rentalContractID"]').value = rentalContract.id;
+
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+</script>
+@* ============================================================== *@
