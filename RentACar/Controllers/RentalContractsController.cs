@@ -26,6 +26,7 @@ namespace RentACar.Controllers
         {
             var today = DateTime.Now;
             var rentalContracts = await _rentalContractService.GetAllRentalContractsAsync();
+            rentalContracts = rentalContracts.OrderByDescending(rc => rc.StartDate).ToList();
             var contracts = rentalContracts.Select(
                                 rc => new RentalContractViewModel
                                 {
