@@ -15,8 +15,10 @@ ASP.NET Core application for vehicle rental management.
 
 ### 1️⃣ Clone the repository
 
+```bash
 git clone https://github.com/Redenpt/RentACar.git
 cd RentACar
+```
 
 ### 2️⃣ Restore dependencies
 
