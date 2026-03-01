@@ -75,15 +75,17 @@
                         <td>@vehicle.Year</td>
                         <td>@vehicle.FuelType</td>
                         <td class="text-center">
-                            @switch (vehicle.Status)
-                            {
-                                case VehicleStatus.Rented:
-                                    <span class="status-dot bg-danger me-1"></span> 
-                                    break;
-                                case VehicleStatus.Available:
-                                    <span class="status-dot bg-success me-1"></span> 
-                                    break;
-                            }
+                            <span class="badge @(vehicle.Status == VehicleStatus.Rented ? "bg-danger" :vehicle.Status == VehicleStatus.Available ? "bg-success" : "bg-secondary")">
+                                @switch (vehicle.Status)
+                                {
+                                    case VehicleStatus.Rented:
+                                        @:Alugado
+                                        break;
+                                    case VehicleStatus.Available:
+                                        @:Disponível
+                                        break;
+                                }
+                            </span>
                         </td>
                         <td class="text-end">
                             <button class="btn btn-sm btn-warning" onclick="openEditVehicleModal('@vehicle.ID')">Editar</button>
@@ -102,19 +104,6 @@
             }
         </tbody>
     </table>
-        <div class="mb-3">
-        <strong>Estado:</strong>
-        <div class="d-flex align-items-center gap-3 mt-1">
-            <div class="d-flex align-items-center">
-                <span class="status-dot bg-success me-1"></span>
-                <span>Disponível</span>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="status-dot bg-danger me-1"></span>
-                <span>Alugado</span>
-            </div>
-        </div>
-    </div>
 </div>
 @* ===================== MODAL ADICIONAR VEÍCULO ===================== *@
 @{

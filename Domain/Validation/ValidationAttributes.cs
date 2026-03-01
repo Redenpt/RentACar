@@ -16,10 +16,10 @@ namespace Domain.Validation
                 return ValidationResult.Success;
 
             string licensePlate = value.ToString()!.Trim();
-            var regex = @"^(?:[A-Z]{2}-\d{2}-\d{2}|\d{2}-\d{2}-[A-Z]{2}|\d{2}-[A-Z]{2}-\d{2})$";
+            var regex = @"^(?:[A-Z]{2}-\d{2}-\d{2}|\d{2}-\d{2}-[A-Z]{2}|\d{2}-[A-Z]{2}-\d{2}|[A-Z]{2}-\d{2}-[A-Z]{2})$";
 
             if (!Regex.IsMatch(licensePlate, regex))
-                return new ValidationResult("Matrícula inválida. Deve contar um dos seguintes formatos: AA-00-00, 00-00-AA ou 00-AA-00.");
+                return new ValidationResult("Matrícula inválida. Deve contar um dos seguintes formatos: AA-00-00, 00-00-AA, AA-00-AA ou 00-AA-00.");
             return ValidationResult.Success;
         }
     }
